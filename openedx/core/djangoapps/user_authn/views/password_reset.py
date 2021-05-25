@@ -133,6 +133,7 @@ def send_password_reset_success_email(user, request):
     )
     try:
         ace.send(msg)
+        log.info('PasswordResetSuccess: sending email to user [%s] succeeded.', user.username)
     except Exception:  # pylint: disable=broad-except
         log.exception('PasswordResetSuccess: sending email to user [%s] failed.', user.username)
 
