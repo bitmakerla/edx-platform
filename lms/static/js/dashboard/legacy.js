@@ -239,6 +239,11 @@
              if ($('#activate-account-modal p span').length === 0) {
                 $('#activate-account-modal p').append("<span class='icon fa fa-spinner fa-pulse' aria-hidden='true'></span>");
              }
+             if ($('#activate-account-modal p span').length === 1) {
+
+                $('#activate-account-modal p span').removeClass('fa-check');
+                $('#activate-account-modal p span').addClass('fa-spinner fa-pulse');
+             }
          });
 
          $('#activate-account-modal').on('click', '#button', function() {

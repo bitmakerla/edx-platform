@@ -1632,10 +1632,7 @@ a.fade-cover {
     padding: 1rem 1rem 1rem 0;
 
     .btn-primary {
-        text-transform: lowercase;
-    }
-    .btn-primary:first-letter {
-         text-transform: capitalize
+        text-transform: none;
     }
 }
 .activate-account-modal-body {
