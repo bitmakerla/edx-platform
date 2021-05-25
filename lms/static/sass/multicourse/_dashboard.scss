@@ -1607,12 +1607,36 @@ a.fade-cover {
         border: none;
         border-radius: 5px;
     }
+    p{
+      .fa {
+        color: #00688D
+      }
+    }
+}
+
+@media (max-width: 460px) and (min-width: 360px) {
+    #activate-account-modal {
+        width: 350px;
+    }
+}
+
+@media (max-width: 360px) {
+    #activate-account-modal {
+        width: 300px;
+    }
 }
 
 .activate-account-modal-button {
     text-align: right;
     display: block;
     padding: 1rem 1rem 1rem 0;
+
+    .btn-primary {
+        text-transform: lowercase;
+    }
+    .btn-primary:first-letter {
+         text-transform: capitalize
+    }
 }
 .activate-account-modal-body {
     padding: 0 1rem;

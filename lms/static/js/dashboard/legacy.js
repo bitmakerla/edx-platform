@@ -228,12 +228,17 @@
              $.ajax({
                  type: 'POST',
                  url: urls.sendAccountActivationEmail,
-                 data: $(this).serializeArray()
+                 data: $(this).serializeArray(),
+                 success: function() {
+
+                   $('#activate-account-modal p span').removeClass('fa-spinner fa-pulse');
+                   $('#activate-account-modal p span').addClass('fa-check');
+                 },
              });
              e.preventDefault();
-
-             $('#activate-account-modal').css('display', 'none');
-             $('#lean_overlay').css({display: 'none'});
+             if ($('#activate-account-modal p span').length === 0) {
+                $('#activate-account-modal p').append("<span class='icon fa fa-spinner fa-pulse' aria-hidden='true'></span>");
+             }
          });
 
          $('#activate-account-modal').on('click', '#button', function() {
