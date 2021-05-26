@@ -22,10 +22,10 @@ from lms.djangoapps.certificates.queue import XQueueCertInterface
 from lms.djangoapps.certificates.tasks import CERTIFICATE_DELAY_SECONDS, generate_certificate
 from lms.djangoapps.certificates.utils import (
     emit_certificate_event,
-    has_html_certificates_enabled_from_course_overview
+    has_html_certificates_enabled
 )
 from lms.djangoapps.grades.api import CourseGradeFactory
-from lms.djangoapps.instructor.access import list_with_level_from_course_key
+from lms.djangoapps.instructor.access import list_with_level
 from lms.djangoapps.verify_student.services import IDVerificationService
 from openedx.core.djangoapps.content.course_overviews.api import get_course_overview
 from openedx.core.djangoapps.waffle_utils import CourseWaffleFlag
@@ -216,7 +216,7 @@ def _can_generate_certificate_common(user, course_key):
         return False
 
     course_overview = get_course_overview(course_key)
-    if not has_html_certificates_enabled_from_course_overview(course_overview):
+    if not has_html_certificates_enabled(course_overview):
         log.info(f'{course_key} does not have HTML certificates enabled. Certificate cannot be generated for '
                  f'{user.id}.')
         return False
@@ -329,7 +329,7 @@ def _can_set_cert_status_common(user, course_key):
         return False
 
     course_overview = get_course_overview(course_key)
-    if not has_html_certificates_enabled_from_course_overview(course_overview):
+    if not has_html_certificates_enabled(course_overview):
         return False
 
     return True
@@ -371,7 +371,7 @@ def _is_beta_tester(user, course_key):
     """
     Check if the user is a beta tester in this course run
     """
-    beta_testers_queryset = list_with_level_from_course_key(course_key, 'beta')
+    beta_testers_queryset = list_with_level(course_key, 'beta')
     return beta_testers_queryset.filter(username=user.username).exists()
 
 
@@ -412,8 +412,7 @@ def _is_cert_downloadable(user, course_key):
     return True
 
 
-def generate_user_certificates(student, course_key, course=None, insecure=False, generation_mode='batch',
-                               forced_grade=None):
+def generate_user_certificates(student, course_key, insecure=False, generation_mode='batch', forced_grade=None):
     """
     It will add the add-cert request into the xqueue.
 
@@ -431,8 +430,6 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
         course_key (CourseKey)
 
     Keyword Arguments:
-        course (Course): Optionally provide the course object; if not provided
-            it will be loaded.
         insecure - (Boolean)
         generation_mode - who has requested certificate generation. Its value should `batch`
         in case of django command and `self` if student initiated the request.
@@ -446,7 +443,7 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
                  f'{student.id}.')
         return generate_certificate_task(student, course_key)
 
-    beta_testers_queryset = list_with_level_from_course_key(course_key, 'beta')
+    beta_testers_queryset = list_with_level(course_key, 'beta')
     if beta_testers_queryset.filter(username=student.username):
         log.info(f"Canceling Certificate Generation task for user {student.id} : {course_key}. User is a Beta Tester.")
         return
@@ -456,12 +453,11 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
         xqueue.use_https = False
 
     course_overview = get_course_overview(course_key)
-    generate_pdf = not has_html_certificates_enabled_from_course_overview(course_overview)
+    generate_pdf = not has_html_certificates_enabled(course_overview)
 
     cert = xqueue.add_cert(
         student,
         course_key,
-        course=course,
         generate_pdf=generate_pdf,
         forced_grade=forced_grade
     )
@@ -484,8 +480,7 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
     return cert.status
 
 
-def regenerate_user_certificates(student, course_key, course=None,
-                                 forced_grade=None, template_file=None, insecure=False):
+def regenerate_user_certificates(student, course_key, forced_grade=None, template_file=None, insecure=False):
     """
     Add the regen-cert request into the xqueue.
 
@@ -500,8 +495,6 @@ def regenerate_user_certificates(student, course_key, course=None,
         course_key (CourseKey)
 
     Keyword Arguments:
-        course (Course): Optionally provide the course object; if not provided
-            it will be loaded.
         grade_value - The grade string, such as "Distinction"
         template_file - The template file used to render this certificate
         insecure - (Boolean)
@@ -516,14 +509,13 @@ def regenerate_user_certificates(student, course_key, course=None,
         xqueue.use_https = False
 
     course_overview = get_course_overview(course_key)
-    generate_pdf = not has_html_certificates_enabled_from_course_overview(course_overview)
+    generate_pdf = not has_html_certificates_enabled(course_overview)
     log.info(f"Started regenerating certificates for user {student.id} in course {course_key} with generate_pdf "
              f"status: {generate_pdf}.")
 
     xqueue.regen_cert(
         student,
         course_key,
-        course=course,
         forced_grade=forced_grade,
         template_file=template_file,
         generate_pdf=generate_pdf

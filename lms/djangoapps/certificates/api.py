@@ -20,11 +20,13 @@ from opaque_keys.edx.django.models import CourseKeyField
 from organizations.api import get_course_organization_id
 
 from common.djangoapps.student.api import is_user_enrolled_in_course
+from common.djangoapps.student.models import CourseEnrollment
 from lms.djangoapps.branding import api as branding_api
 from lms.djangoapps.certificates.generation_handler import (
     can_generate_certificate_task as _can_generate_certificate_task,
     generate_certificate_task as _generate_certificate_task,
     generate_user_certificates as _generate_user_certificates,
+    is_on_certificate_allowlist as _is_on_certificate_allowlist,
     is_using_v2_course_certificates as _is_using_v2_course_certificates,
     regenerate_user_certificates as _regenerate_user_certificates
 )
@@ -196,14 +198,12 @@ def get_recently_modified_certificates(course_keys=None, start_date=None, end_da
     return GeneratedCertificate.objects.filter(**cert_filter_args).order_by('modified_date')
 
 
-def generate_user_certificates(student, course_key, course=None, insecure=False, generation_mode='batch',
-                               forced_grade=None):
-    return _generate_user_certificates(student, course_key, course, insecure, generation_mode, forced_grade)
+def generate_user_certificates(student, course_key, insecure=False, generation_mode='batch', forced_grade=None):
+    return _generate_user_certificates(student, course_key, insecure, generation_mode, forced_grade)
 
 
-def regenerate_user_certificates(student, course_key, course=None,
-                                 forced_grade=None, template_file=None, insecure=False):
-    return _regenerate_user_certificates(student, course_key, course, forced_grade, template_file, insecure)
+def regenerate_user_certificates(student, course_key, forced_grade=None, template_file=None, insecure=False):
+    return _regenerate_user_certificates(student, course_key, forced_grade, template_file, insecure)
 
 
 def can_generate_certificate_task(user, course_key):
@@ -267,6 +267,7 @@ def certificate_downloadable_status(student, course_key):
         course_overview.certificate_available_date
     ):
         response_data['earned_but_not_available'] = True
+        response_data['certificate_available_date'] = course_overview.certificate_available_date
 
     may_view_certificate = course_overview.may_certify()
     if current_status['status'] == CertificateStatuses.downloadable and may_view_certificate:
@@ -422,8 +423,8 @@ def example_certificates_status(course_key):
     return ExampleCertificateSet.latest_status(course_key)
 
 
-def has_html_certificates_enabled(course):
-    return _has_html_certificates_enabled(course)
+def has_html_certificates_enabled(course_overview):
+    return _has_html_certificates_enabled(course_overview)
 
 
 def get_certificate_url(user_id=None, course_id=None, uuid=None, user_certificate=None):
@@ -674,7 +675,7 @@ def is_on_allowlist(user, course_key):
     Determines if a learner has an active allowlist entry for a given course-run.
     """
     log.info(f"Checking if student {user.id} is on the allowlist in course {course_key}")
-    return CertificateWhitelist.objects.filter(user=user, course_id=course_key, whitelist=True).exists()
+    return _is_on_certificate_allowlist(user, course_key)
 
 
 def can_be_added_to_allowlist(user, course_key):
@@ -741,3 +742,30 @@ def get_allowlist(course_key):
     Return the certificate allowlist for the given course run
     """
     return CertificateWhitelist.get_certificate_white_list(course_key)
+
+
+def get_enrolled_allowlisted_users(course_key):
+    """
+    Get all users who:
+    - are enrolled in this course run
+    - are allowlisted in this course run
+    """
+    users = CourseEnrollment.objects.users_enrolled_in(course_key)
+    return users.filter(
+        certificatewhitelist__course_id=course_key,
+        certificatewhitelist__whitelist=True
+    )
+
+
+def get_enrolled_allowlisted_not_passing_users(course_key):
+    """
+    Get all users who:
+    - are enrolled in this course run
+    - are allowlisted in this course run
+    - do not have a course certificate with a passing status
+    """
+    users = get_enrolled_allowlisted_users(course_key)
+    return users.exclude(
+        generatedcertificate__course_id=course_key,
+        generatedcertificate__status__in=CertificateStatuses.PASSED_STATUSES
+    )

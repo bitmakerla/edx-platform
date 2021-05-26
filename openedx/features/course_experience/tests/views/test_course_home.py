@@ -27,7 +27,7 @@ from common.djangoapps.student.tests.factories import OrgStaffFactory
 from common.djangoapps.student.tests.factories import StaffFactory
 from lms.djangoapps.commerce.models import CommerceConfiguration
 from lms.djangoapps.commerce.utils import EcommerceService
-from lms.djangoapps.course_goals.api import add_course_goal, remove_course_goal
+from lms.djangoapps.course_goals.api import add_course_goal, get_course_goal
 from lms.djangoapps.courseware.tests.helpers import get_expiration_banner_text
 from lms.djangoapps.discussion.django_comment_client.tests.factories import RoleFactory
 from openedx.core.djangoapps.content.course_overviews.models import CourseOverview
@@ -43,7 +43,9 @@ from openedx.core.djangolib.markup import HTML
 from openedx.features.course_duration_limits.models import CourseDurationLimitConfig
 from openedx.features.course_experience import (
     COURSE_ENABLE_UNENROLLED_ACCESS_FLAG,
+    COURSE_PRE_START_ACCESS_FLAG,
     DISABLE_UNIFIED_COURSE_TAB_FLAG,
+    ENABLE_COURSE_GOALS,
     SHOW_UPGRADE_MSG_ON_COURSE_HOME
 )
 from openedx.features.course_experience.tests import BaseCourseUpdatesTestCase
@@ -54,9 +56,6 @@ from xmodule.course_module import COURSE_VISIBILITY_PRIVATE, COURSE_VISIBILITY_P
 from xmodule.modulestore import ModuleStoreEnum
 from xmodule.modulestore.tests.django_utils import CourseUserType, ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory, check_mongo_calls
-
-from ... import COURSE_PRE_START_ACCESS_FLAG, ENABLE_COURSE_GOALS
-from .helpers import add_course_mode, remove_course_mode
 
 TEST_PASSWORD = 'test'
 TEST_CHAPTER_NAME = 'Test Chapter'
@@ -749,7 +748,7 @@ class TestCourseHomePageAccess(CourseHomePageTestCase):
         self.assertNotContains(response, TEST_COURSE_GOAL_OPTIONS)
 
         # Verify that enrolled and verified users are not shown the set course goal message.
-        remove_course_goal(user, str(verifiable_course.id))
+        get_course_goal(user, verifiable_course.id).delete()
         CourseEnrollment.enroll(user, verifiable_course.id, CourseMode.VERIFIED)
         response = self.client.get(course_home_url(verifiable_course))
         self.assertNotContains(response, TEST_COURSE_GOAL_OPTIONS)

@@ -15,9 +15,9 @@ from uuid import uuid4
 from common.djangoapps.student.models import CourseEnrollment, UserProfile
 from lms.djangoapps.certificates.models import CertificateStatuses, GeneratedCertificate
 from lms.djangoapps.certificates.queue import XQueueCertInterface
-from lms.djangoapps.certificates.utils import emit_certificate_event, has_html_certificates_enabled_from_course_overview
+from lms.djangoapps.certificates.utils import emit_certificate_event, has_html_certificates_enabled
 from lms.djangoapps.grades.api import CourseGradeFactory
-from lms.djangoapps.instructor.access import list_with_level_from_course_key
+from lms.djangoapps.instructor.access import list_with_level
 from openedx.core.djangoapps.content.course_overviews.api import get_course_overview
 
 log = logging.getLogger(__name__)
@@ -98,8 +98,7 @@ def _generate_certificate(user, course_key):
     return cert
 
 
-def generate_user_certificates(student, course_key, course=None, insecure=False, generation_mode='batch',
-                               forced_grade=None):
+def generate_user_certificates(student, course_key, insecure=False, generation_mode='batch', forced_grade=None):
     """
     It will add the add-cert request into the xqueue.
 
@@ -117,15 +116,13 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
         course_key (CourseKey)
 
     Keyword Arguments:
-        course (Course): Optionally provide the course object; if not provided
-            it will be loaded.
         insecure - (Boolean)
         generation_mode - who has requested certificate generation. Its value should `batch`
         in case of django command and `self` if student initiated the request.
         forced_grade - a string indicating to replace grade parameter. if present grading
                        will be skipped.
     """
-    beta_testers_queryset = list_with_level_from_course_key(course_key, 'beta')
+    beta_testers_queryset = list_with_level(course_key, 'beta')
     if beta_testers_queryset.filter(username=student.username):
         log.info(f"Canceling Certificate Generation task for user {student.id} : {course_key}. User is a Beta Tester.")
         return
@@ -135,12 +132,11 @@ def generate_user_certificates(student, course_key, course=None, insecure=False,
         xqueue.use_https = False
 
     course_overview = get_course_overview(course_key)
-    generate_pdf = not has_html_certificates_enabled_from_course_overview(course_overview)
+    generate_pdf = not has_html_certificates_enabled(course_overview)
 
     cert = xqueue.add_cert(
         student,
         course_key,
-        course=course,
         generate_pdf=generate_pdf,
         forced_grade=forced_grade
     )

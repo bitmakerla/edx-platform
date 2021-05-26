@@ -52,22 +52,6 @@ SHOW_REVIEW_RULES_FLAG = CourseWaffleFlag(  # lint-amnesty, pylint: disable=togg
     module_name=__name__,
 )
 
-# Waffle flag to move the registration of special exams to an async celery task
-# .. toggle_name: contentstore.async_register_exams
-# .. toggle_implementation: CourseWaffleFlag
-# .. toggle_default: False
-# .. toggle_description: Toggles the asynchronous registration of special exams
-# .. toggle_use_cases: temporary, open_edx
-# .. toggle_creation_date: 2021-04-21
-# .. toggle_target_removal_date: 2021-05-07
-# .. toggle_warnings:
-# .. toggle_tickets: https://openedx.atlassian.net/browse/MST-757
-ENABLE_ASYNC_REGISTER_EXAMS = CourseWaffleFlag(
-    waffle_namespace=waffle_flags(),
-    flag_name='async_register_exams',
-    module_name=__name__,
-)
-
 # Waffle flag to redirect to the library authoring MFE.
 # .. toggle_name: contentstore.library_authoring_mfe
 # .. toggle_implementation: WaffleFlag
@@ -81,5 +65,21 @@ ENABLE_ASYNC_REGISTER_EXAMS = CourseWaffleFlag(
 REDIRECT_TO_LIBRARY_AUTHORING_MICROFRONTEND = LegacyWaffleFlag(
     waffle_namespace=waffle_flags(),
     flag_name='library_authoring_mfe',
+    module_name=__name__,
+)
+
+
+# .. toggle_name: studio.pages_and_resources_mfe
+# .. toggle_implementation: CourseWaffleFlag
+# .. toggle_default: False
+# .. toggle_description: Waffle flag to link existing studio views to the new Pages and Resources experience.
+# .. toggle_use_cases: temporary, open_edx
+# .. toggle_creation_date: 2021-05-24
+# .. toggle_target_removal_date: 2021-12-31
+# .. toggle_warnings: Also set settings.COURSE_AUTHORING_MICROFRONTEND_URL.
+# .. toggle_tickets: None
+ENABLE_PAGES_AND_RESOURCES_MICROFRONTEND = CourseWaffleFlag(
+    waffle_namespace=waffle_flags(),
+    flag_name='pages_and_resources_mfe',
     module_name=__name__,
 )
