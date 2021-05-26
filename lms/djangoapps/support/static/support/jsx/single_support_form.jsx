@@ -198,14 +198,12 @@ class RenderForm extends React.Component {
     const queryString = event.target.value;
     if (queryString.length > 2) {
       let suggestions = [];
-//       await fetch(`${this.learnerSupportCenterURL}/hc/api/internal/instant_search.json?query=${queryString}&locale=en-us`, { headers: {
-//         'Content-Type': 'application/json',
-//       }}).then((response) => {
-//         suggestions = response.json.results;
-//         this.setState({ suggestions });
-//       });
-      suggestions = { results: [{ title: 'How do self-paced \u003cem\u003ecourses\u003c/em\u003e work?', category_title: 'Courses', url: '/hc/search/instant_click?data=BAh7CjoHaWRpBJD%2BTgw6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiQS9oYy9lbi11cy9hcnRpY2xlcy8yMDY1MDM1NjgtSG93LWRvLXNlbGYtcGFjZWQtY291cnNlcy13b3JrLQY7B1Q6DnNlYXJjaF9pZEkiKTZhZTQ1ZmZjLTM5ZTctNDg5Yi04NGIyLWNkNWFlNWMwMzIyMQY7B0Y6CXJhbmtpBg%3D%3D--f8c31679dce748e92dc0fa88cb3ad1f0fff9eb18' }, { title: 'Can I re-take a \u003cem\u003ecourse\u003c/em\u003e?', category_title: 'Courses', url: '/hc/search/instant_click?data=BAh7CjoHaWRpBK7%2BTgw6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiOS9oYy9lbi11cy9hcnRpY2xlcy8yMDY1MDM1OTgtQ2FuLUktcmUtdGFrZS1hLWNvdXJzZS0GOwdUOg5zZWFyY2hfaWRJIik2YWU0NWZmYy0zOWU3LTQ4OWItODRiMi1jZDVhZTVjMDMyMjEGOwdGOglyYW5raQc%3D--e5186e74d5866ace8ac8a191398df42ea2571497' }, { title: 'About \u003cem\u003ecourse\u003c/em\u003e wikis', category_title: 'Courses', url: '/hc/search/instant_click?data=BAh7CjoHaWRsKwh%2FK6%2FRUwA6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiNy9oYy9lbi11cy9hcnRpY2xlcy8zNjAwMDAyMDM2NDctQWJvdXQtY291cnNlLXdpa2lzBjsHVDoOc2VhcmNoX2lkSSIpNmFlNDVmZmMtMzllNy00ODliLTg0YjItY2Q1YWU1YzAzMjIxBjsHRjoJcmFua2kI--98329a369ef524a9b0cdfa86ca316c454c49d8d8' }, { title: 'What does it cost to take a \u003cem\u003ecourse\u003c/em\u003e?', category_title: 'Account Basics', url: '/hc/search/instant_click?data=BAh7CjoHaWRpBHaLSgw6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiRS9oYy9lbi11cy9hcnRpY2xlcy8yMDYyMTE5NTgtV2hhdC1kb2VzLWl0LWNvc3QtdG8tdGFrZS1hLWNvdXJzZS0GOwdUOg5zZWFyY2hfaWRJIik2YWU0NWZmYy0zOWU3LTQ4OWItODRiMi1jZDVhZTVjMDMyMjEGOwdGOglyYW5raQk%3D--7bd1a51841935cb60a24e4cc801ac8c97e3ef99f' }, { title: 'How do I take a \u003cem\u003ecourse\u003c/em\u003e for free?', category_title: 'Certificates', url: '/hc/search/instant_click?data=BAh7CjoHaWRpBHlFVQw6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiQi9oYy9lbi11cy9hcnRpY2xlcy8yMDY5MTQ5MzctSG93LWRvLUktdGFrZS1hLWNvdXJzZS1mb3ItZnJlZS0GOwdUOg5zZWFyY2hfaWRJIik2YWU0NWZmYy0zOWU3LTQ4OWItODRiMi1jZDVhZTVjMDMyMjEGOwdGOglyYW5raQo%3D--7705141b6b75288fc4c8bc9d6fbce4479d230096' }, { title: 'How do I start my \u003cem\u003ecourse\u003c/em\u003e?', category_title: 'Courses', url: '/hc/search/instant_click?data=BAh7CjoHaWRsKwi23fLTUwA6CXR5cGVJIgxhcnRpY2xlBjoGRVQ6CHVybEkiPi9oYy9lbi11cy9hcnRpY2xlcy8zNjAwMzgxOTQ2MTQtSG93LWRvLUktc3RhcnQtbXktY291cnNlLQY7B1Q6DnNlYXJjaF9pZEkiKTZhZTQ1ZmZjLTM5ZTctNDg5Yi04NGIyLWNkNWFlNWMwMzIyMQY7B0Y6CXJhbmtpCw%3D%3D--40b736246e1bc6b163867691827950d80ea3b128' }] }.results;
-      this.setState({ suggestions });
+      await fetch(`${this.learnerSupportCenterURL}/hc/api/internal/instant_search.json?query=${queryString}&locale=en-us`, { headers: {
+        'Content-Type': 'application/json',
+      }}).then((response) => {
+        suggestions = response.json.results;
+        this.setState({ suggestions });
+      });
     } else {
       this.setState({
         suggestions: [],
